@@ -36,7 +36,7 @@
     document.querySelector('meta[name="twitter:card"]').setAttribute('content', 'summary_large_image');
     document.querySelector('meta[property="twitter:title"]').setAttribute('content', anime.title);
     document.querySelector('meta[property="twitter:url"]').setAttribute('content', currentUrl);
-    document.querySelector('meta[property="twitter:description"]').setAttribute('content', \`\${anime.title} - dcosmos2\`);
+    document.querySelector('meta[property="twitter:description"]').setAttribute('content', anime.synopsis ? \`\${anime.synopsis} - dcosmos2\` : 'No synopsis available.');
 
     // Update canonical link
     const canonicalLink = document.querySelector('link[rel="canonical"]');
