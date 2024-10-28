@@ -1,8 +1,3 @@
-<div id="anime-container">
-    <!-- Konten akan dimuat di sini oleh JavaScript -->
-</div>
-
-<script>
 (async function() {
     const container = document.getElementById('anime-container');
     if (!container) {
@@ -101,4 +96,3 @@
         \`;
     }
 })();
-</script>
