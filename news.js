@@ -89,7 +89,7 @@ async function fetchNewsList() {
       newsDiv.innerHTML = `
         <img src="${newsItem.top_image}" alt="News Image">
         <div class="news-info">
-          <h2 class="title"><a href="index.html?news=${newsItem.id}">${newsItem.title}</a></h2>
+          <h2 class="title"><a href="?news=${newsItem.id}">${newsItem.title}</a></h2>
           <div class="description">${newsItem.description || "No description available."}</div>
           <div class="published-date">${formatDate(newsItem.published_date) || "Date not available"}</div>
         </div>
@@ -131,7 +131,7 @@ async function fetchNewsData(id) {
     data.relatedNews.forEach((item) => {
       const relatedDiv = document.createElement('div');
       relatedDiv.classList.add('news-item');
-      relatedDiv.innerHTML = `<h3 class="title"><a href="index.html?news=${item.id}">${item.title}</a></h3>`;
+      relatedDiv.innerHTML = `<h3 class="title"><a href="?news=${item.id}">${item.title}</a></h3>`;
       relatedNewsList.appendChild(relatedDiv);
     });
 
