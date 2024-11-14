@@ -58,7 +58,7 @@ function updateMetaAndTitle(newsData) {
   createOrUpdateMetaTag("twitter:title", null, newsData.title);
   createOrUpdateMetaTag("twitter:description", null, newsData.description || "Read the latest news update.");
   createOrUpdateMetaTag("twitter:image", null, newsData.top_image || "default-image.jpg");
-  createOrUpdateMetaTag("keywords", null, newsData.keywords ? newsData.keywords.join(", ") : "news, article");
+  createOrUpdateMetaTag("keywords", null, newsData.keywords ? newsData.keywords : "news, article");
 
   // Add/update canonical link
   createOrUpdateLinkTag("canonical", window.location.href);
@@ -73,9 +73,7 @@ function formatDate(timestamp) {
 // Fungsi untuk menampilkan daftar berita
 async function fetchNewsList() {
   try {
-    const response = await fetch('64.181.228.215:3003/news/',		{
-      headers: { 'bypass-tunnel-reminder': 1 },
-    });
+    const response = await fetch('http://64.181.228.215:3003/news/');
     const data = await response.json();
 
     // Urutkan data berdasarkan published_date secara descending
@@ -105,9 +103,9 @@ async function fetchNewsList() {
 // Fungsi untuk menampilkan detail berita dan judul acak terkait berdasarkan ID
 async function fetchNewsData(id) {
   try {
-    const response = await fetch('64.181.228.215:3003/news/findById', {
+    const response = await fetch('http://64.181.228.215:3003/news/findById', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' ,'bypass-tunnel-reminder': 1},
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: id })
     });
     const data = await response.json();
@@ -117,11 +115,11 @@ async function fetchNewsData(id) {
     newsImage.src = data.top_image || ""; // Gambar utama
     newsImage.style.display = data.top_image ? "block" : "none"; // Sembunyikan jika tidak ada gambar
     newsDescription.textContent = data.description || "Description not available.";
-    newsAuthor.textContent = `Author: ${data.authors.join(", ")}`; // Menampilkan nama penulis
+    newsAuthor.textContent = `Author: ${data.authors}`; // Menampilkan nama penulis
     newsPublisher.textContent = `Publisher: ${data.publisher_title}`;
     newsPublishedDate.textContent = `Published Date: ${formatDate(data.published_date) || "Not available"}`;
     newsContent.innerHTML = data.news_html || "No content available";
-    newsKeywords.textContent = `Keywords: ${data.keywords.join(", ") || "N/A"}`; // Menampilkan keywords
+    newsKeywords.textContent = `Keywords: ${data.keywords || "N/A"}`; // Menampilkan keywords
 
     // Update meta and title
     updateMetaAndTitle(data);
