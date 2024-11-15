@@ -135,6 +135,9 @@ async function fetchNewsData(id) {
 
     newsContainer.style.display = 'block';
     newsList.style.display = 'none';
+    if(data.isBot==false){
+      nextload();
+    }
   } catch (error) {
     newsTitle.textContent = "Error loading news data.";
     console.error("Error fetching data:", error);
