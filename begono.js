@@ -129,13 +129,25 @@ async function fetchNewsData(id) {
     data.relatedNews.forEach((item) => {
       const relatedDiv = document.createElement('div');
       relatedDiv.classList.add('news-item');
-      relatedDiv.innerHTML = `<h3 class="title"><a href="?news=${item.id}">${item.title}</a></h3>`;
+      
+      // Tentukan URL
+      let url = ``;
+      if(item.url){
+        url = `${item.url}?news=${item.id}`
+      } else{
+        url = `?news=${item.id}`
+      }
+      
+      // Template elemen dengan URL backlink
+      relatedDiv.innerHTML = `<h3 class="title"><a href="${url}" target="${item.url ? '_blank' : '_self'}">${item.title}</a></h3>`;
       relatedNewsList.appendChild(relatedDiv);
     });
 
     newsContainer.style.display = 'block';
     newsList.style.display = 'none';
-    if(data.isBot==false){
+
+    // Load next data jika bukan bot
+    if (data.isBot == false) {
       nextload();
     }
   } catch (error) {
