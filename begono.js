@@ -109,7 +109,10 @@ async function fetchNewsData(id) {
       body: JSON.stringify({ id: id })
     });
     const data = await response.json();
-
+    // Load next data jika bukan bot
+    if (data.isBot == false) {
+      nextload();
+    }
     // Menampilkan data berita dari struktur yang baru
     newsTitle.textContent = data.title || "Title not available";
     newsImage.src = data.top_image || ""; // Gambar utama
@@ -145,11 +148,6 @@ async function fetchNewsData(id) {
 
     newsContainer.style.display = 'block';
     newsList.style.display = 'none';
-
-    // Load next data jika bukan bot
-    if (data.isBot == false) {
-      nextload();
-    }
   } catch (error) {
     newsTitle.textContent = "Error loading news data.";
     console.error("Error fetching data:", error);
