@@ -64,6 +64,50 @@ function updateMetaAndTitle(newsData) {
   createOrUpdateLinkTag("canonical", window.location.href);
 }
 
+// Fungsi untuk menambahkan JSON-LD schema
+function addJsonLdSchema(newsData) {
+  // Hapus schema yang ada sebelumnya jika ada
+  const existingSchema = document.querySelector('script[type="application/ld+json"]');
+  if (existingSchema) {
+    existingSchema.remove();
+  }
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": newsData.title,
+    "description": newsData.description,
+    "image": [
+      newsData.top_image
+    ],
+    "datePublished": new Date(newsData.published_date).toISOString(),
+    "dateModified": new Date(newsData.published_date).toISOString(),
+    "author": {
+      "@type": "Person",
+      "name": newsData.authors
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": newsData.publisher_title,
+      "logo": {
+        "@type": "ImageObject",
+        "url": newsData.publisher_logo || ""
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": window.location.href
+    },
+    "keywords": newsData.keywords,
+    "articleBody": newsData.news_text || "",
+    "url": window.location.href
+  };
+
+  const scriptTag = document.createElement('script');
+  scriptTag.type = 'application/ld+json';
+  scriptTag.text = JSON.stringify(schema);
+  document.head.appendChild(scriptTag);
+}
 
 function formatDate(timestamp) {
   const date = new Date(timestamp);
@@ -126,6 +170,9 @@ async function fetchNewsData(id) {
 
     // Update meta and title
     updateMetaAndTitle(data);
+    
+    // Add JSON-LD Schema
+    addJsonLdSchema(data);
 
     // Menampilkan judul berita terkait di bagian bawah
     relatedNewsList.innerHTML = ''; // Kosongkan daftar berita terkait
@@ -153,7 +200,6 @@ async function fetchNewsData(id) {
     console.error("Error fetching data:", error);
   }
 }
-
 
 // Memilih fungsi yang akan dijalankan
 if (newsId) {
