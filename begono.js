@@ -80,8 +80,8 @@ function addJsonLdSchema(newsData) {
     "image": [
       newsData.top_image
     ],
-    "datePublished": new Date(newsData.published_date).toISOString(),
-    "dateModified": new Date(newsData.published_date).toISOString(),
+    "datePublished": formatDate(newsData.published_date),
+    "dateModified": formatDate(newsData.published_date),
     "author": {
       "@type": "Person",
       "name": newsData.authors
@@ -110,7 +110,7 @@ function addJsonLdSchema(newsData) {
 }
 
 function formatDate(timestamp) {
-  const date = new Date(timestamp);
+  const date = new Date(timestamp * 1000); // Konversi detik ke milidetik
   return date.toUTCString();
 }
 
