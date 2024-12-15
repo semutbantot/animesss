@@ -110,7 +110,7 @@ function addJsonLdSchema(newsData) {
 }
 
 function formatDate(timestamp) {
-  const date = new Date(timestamp * 1000); // Konversi detik ke milidetik
+  const date = new Date(timestamp); // Konversi detik ke milidetik
   return date.toUTCString();
 }
 
