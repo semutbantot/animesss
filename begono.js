@@ -141,7 +141,7 @@ async function fetchData() {
         }
 
         const data = await response.json();
-        console.log('Response data:', data); // Debug response
+        //console.log('Response data:', data); // Debug response
 
         // Validasi data sebelum render
         if (data.isPage) {
