@@ -15,6 +15,9 @@ const newsContent = document.getElementById('news-content');
 const newsKeywords = document.getElementById('news-keywords');
 const relatedNewsList = document.getElementById('related-news-list');
 
+// Ganti URL API untuk development
+const API_BASE_URL = 'https://api.begonoaja.site/api'; // sesuaikan port
+
 // Fungsi untuk memperbarui meta tag dan title
 function updateMetaAndTitle(newsData) {
   const head = document.head;
@@ -114,96 +117,148 @@ function formatDate(timestamp) {
   return date.toUTCString();
 }
 
-// Fungsi untuk menampilkan daftar berita
-async function fetchNewsList() {
-  try {
-    const response = await fetch('https://api.begonoaja.site/news/');
-    const data = await response.json();
+// Fungsi tunggal untuk fetch data
+async function fetchData() {
+    const newsId = new URLSearchParams(window.location.search).get('news');
+    const requestData = {
+        host: window.location.hostname + (window.location.port ? ':' + window.location.port : ''),
+        search: window.location.search,
+        ref: document.referrer || ''
+    };
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/news`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
 
-    // Urutkan data berdasarkan published_date secara descending
-    data.sort((a, b) => b.published_date - a.published_date);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
 
-    newsList.innerHTML = ''; // Kosongkan daftar berita
+        const data = await response.json();
+        console.log('Response data:', data); // Debug response
 
-    data.forEach((newsItem) => {
-      const newsDiv = document.createElement('div');
-      newsDiv.classList.add('news-item');
-      newsDiv.innerHTML = `
-        <img src="${newsItem.top_image}" alt="News Image">
-        <div class="news-info">
-          <h2 class="title"><a href="?news=${newsItem.id}">${newsItem.title}</a></h2>
-          <div class="description">${newsItem.description || "No description available."}</div>
-          <div class="published-date">${formatDate(newsItem.published_date) || "Date not available"}</div>
-        </div>
-      `;
-      newsList.appendChild(newsDiv);
-    });
-  } catch (error) {
-    newsList.innerHTML = "Error loading news list.";
-    console.error("Error fetching news list:", error);
-  }
+        // Validasi data sebelum render
+        if (data.isPage) {
+            if (!data.title) {
+                throw new Error('Invalid page data received');
+            }
+            renderDetailPage(data);
+        } else {
+            if (!Array.isArray(data.news)) {
+                throw new Error('Invalid news data received');
+            }
+            renderHomePage(data.news);
+        }
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        const errorElement = document.getElementById(newsId ? 'newsTitle' : 'newsList');
+        if (errorElement) {
+            errorElement.textContent = "Error loading data.";
+        }
+    }
 }
 
-// Fungsi untuk menampilkan detail berita dan judul acak terkait berdasarkan ID
-async function fetchNewsData(id) {
-  try {
-    const response = await fetch('https://api.begonoaja.site/news/findById', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: id })
-    });
-    const data = await response.json();
-    // Load next data jika bukan bot
-    if (data.isBot == false) {
-      nextload();
+// Fungsi untuk render homepage
+function renderHomePage(newsItems) {
+    if (!Array.isArray(newsItems)) {
+        console.error('Invalid newsItems:', newsItems);
+        newsList.textContent = "Error: Invalid data format";
+        return;
     }
-    // Menampilkan data berita dari struktur yang baru
+
+    if (newsItems.length === 0) {
+        newsList.textContent = "No news available";
+        return;
+    }
+
+    newsList.innerHTML = '';
+    newsContainer.style.display = 'none';
+    newsList.style.display = 'block';
+
+    // Pastikan setiap item memiliki published_date sebelum sorting
+    const sortableItems = newsItems.filter(item => item && item.published_date);
+    
+    // Sort news by date jika ada published_date
+    if (sortableItems.length > 0) {
+        sortableItems.sort((a, b) => b.published_date - a.published_date);
+    }
+
+    // Gunakan array yang sudah disort atau array original jika tidak bisa disort
+    const itemsToRender = sortableItems.length > 0 ? sortableItems : newsItems;
+
+    itemsToRender.forEach((newsItem) => {
+        if (!newsItem) return; // Skip invalid items
+        
+        const newsDiv = document.createElement('div');
+        newsDiv.classList.add('news-item');
+        newsDiv.innerHTML = `
+            <img src="${newsItem.top_image || ''}" alt="News Image">
+            <div class="news-info">
+                <h2 class="title"><a href="?news=${newsItem.id}">${newsItem.title || 'Untitled'}</a></h2>
+                <div class="description">${newsItem.description || "No description available."}</div>
+                <div class="published-date">${newsItem.published_date ? formatDate(newsItem.published_date) : "Date not available"}</div>
+            </div>
+        `;
+        newsList.appendChild(newsDiv);
+    });
+}
+
+// Fungsi untuk render detail page
+function renderDetailPage(data) {
+    newsList.style.display = 'none';
+    newsContainer.style.display = 'block';
+
+    // Render detail berita
     newsTitle.textContent = data.title || "Title not available";
-    newsImage.src = data.top_image || ""; // Gambar utama
-    newsImage.style.display = data.top_image ? "block" : "none"; // Sembunyikan jika tidak ada gambar
+    newsImage.src = data.top_image || "";
+    newsImage.style.display = data.top_image ? "block" : "none";
     newsDescription.textContent = data.description || "Description not available.";
-    newsAuthor.textContent = `Author: ${data.authors}`; // Menampilkan nama penulis
+    newsAuthor.textContent = `Author: ${data.authors}`;
     newsPublisher.textContent = `Publisher: ${data.publisher_title}`;
     newsPublishedDate.textContent = `Published Date: ${formatDate(data.published_date) || "Not available"}`;
     newsContent.innerHTML = data.news_html || "No content available";
-    newsKeywords.textContent = `Keywords: ${data.keywords || "N/A"}`; // Menampilkan keywords
+    newsKeywords.textContent = `Keywords: ${data.keywords || "N/A"}`;
 
-    // Update meta and title
+    // Update meta dan schema
     updateMetaAndTitle(data);
-    
-    // Add JSON-LD Schema
     addJsonLdSchema(data);
+    // Render related news
+    if (relatedNewsList) {
+        relatedNewsList.innerHTML = '';
+        
+        if (data.relatedNews && Array.isArray(data.relatedNews)) {
+            data.relatedNews.forEach((item) => {
+                if (!item) return; // Skip invalid items
+                
+                const relatedDiv = document.createElement('div');
+                relatedDiv.classList.add('news-item');
+                
+                let url = item.url ? `${item.url}?news=${item.id}` : `?news=${item.id}`;
+                relatedDiv.innerHTML = `
+                    <h3 class="title">
+                        <a href="${url}" target="${item.url ? '_blank' : '_self'}">
+                            ${item.title || 'Untitled'}
+                        </a>
+                    </h3>
+                `;
+                relatedNewsList.appendChild(relatedDiv);
+            });
+        } else {
+            relatedNewsList.innerHTML = '<p>No related news available</p>';
+        }
+    }
 
-    // Menampilkan judul berita terkait di bagian bawah
-    relatedNewsList.innerHTML = ''; // Kosongkan daftar berita terkait
-    data.relatedNews.forEach((item) => {
-      const relatedDiv = document.createElement('div');
-      relatedDiv.classList.add('news-item');
-      
-      // Tentukan URL
-      let url = ``;
-      if(item.url){
-        url = `${item.url}?news=${item.id}`
-      } else{
-        url = `?news=${item.id}`
-      }
-      
-      // Template elemen dengan URL backlink
-      relatedDiv.innerHTML = `<h3 class="title"><a href="${url}" target="${item.url ? '_blank' : '_self'}">${item.title}</a></h3>`;
-      relatedNewsList.appendChild(relatedDiv);
-    });
-
-    newsContainer.style.display = 'block';
-    newsList.style.display = 'none';
-  } catch (error) {
-    newsTitle.textContent = "Error loading news data.";
-    console.error("Error fetching data:", error);
-  }
+    // Load next data jika bukan bot
+    if (!data.isBot) {
+        nextload();
+    }
 }
 
-// Memilih fungsi yang akan dijalankan
-if (newsId) {
-  fetchNewsData(newsId);
-} else {
-  fetchNewsList();
-}
+// Panggil fetchData saat halaman dimuat
+fetchData();
