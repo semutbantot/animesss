@@ -16,7 +16,7 @@ const newsKeywords = document.getElementById('news-keywords');
 const relatedNewsList = document.getElementById('related-news-list');
 
 // Ganti URL API untuk development
-const API_BASE_URL = 'http://localhost:3003/api'; // sesuaikan port
+const API_BASE_URL = 'https://api.begonoaja.site/api'; // sesuaikan port
 
 // Fungsi untuk memperbarui meta tag dan title
 function updateMetaAndTitle(newsData) {
