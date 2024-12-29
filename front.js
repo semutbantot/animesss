@@ -225,12 +225,23 @@ function renderHomePage(newsItems) {
         return;
     }
 
+    // Pastikan setiap item memiliki published_date sebelum sorting
+    const sortableItems = newsItems.filter(item => item && item.published_date);
+    
+    // Sort news by date jika ada published_date
+    if (sortableItems.length > 0) {
+        sortableItems.sort((a, b) => b.published_date - a.published_date);
+    }
+
+    // Gunakan array yang sudah disort atau array original jika tidak bisa disort
+    const itemsToRender = sortableItems.length > 0 ? sortableItems : newsItems;
+
     // Clear dan append semua konten baru
     const newsGrid = document.getElementById('news-grid');
     newsGrid.innerHTML = '';
 
     // Render artikel
-    newsItems.forEach(newsItem => {
+    itemsToRender.forEach(newsItem => {
         const newsDiv = document.createElement('div');
         newsDiv.classList.add('news-item');
         newsDiv.innerHTML = `
