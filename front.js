@@ -305,9 +305,15 @@ function renderDetailPage(data) {
         }
     }
 
-    // Load next data jika bukan bot
     if (!data.isBot) {
+        document.querySelectorAll('.ads-container-top, .ads-container-middle').forEach(container => {
+            container.style.display = 'flex';
+        });
         nextload();
+    } else {
+        document.querySelectorAll('.ads-container-top, .ads-container-middle').forEach(container => {
+            container.style.display = 'none';
+        });
     }
 }
 
